@@ -84,12 +84,45 @@ Press ⌘-k (or type `cmdk`) and...
 - `-o` - Only list the contents of the current directory at depth 1 (original behavior)
 - `-s` - List all contents of the current directory recursively, including subdirectories
 
+### Editor Configuration
+
+By default, cmdk opens text files using your `$EDITOR` environment variable, or falls back to `vim -O` if unset. You can configure any editor:
+
+**Neovim:**
+```bash
+export EDITOR=nvim
+```
+
+**Cursor:**
+```bash
+export EDITOR=cursor
+```
+
+**VS Code:**
+```bash
+export EDITOR="code -w"
+```
+
+**Neovim with vertical splits for multiple files:**
+```bash
+export EDITOR="nvim -O"
+```
+
+**For Fish shell users**, add to `~/.config/fish/config.fish`:
+```fish
+set -gx EDITOR nvim
+```
+
+**For Bash/Zsh users**, add to `~/.bashrc` or `~/.zshrc`:
+```bash
+export EDITOR=nvim
+```
+
 Feedback
 --------
 Hi HN! I'd love to hear how you're using cmdk, and making it your own.
 
 TODO
 ----
-- [Allow customizing the program used to open files](https://github.com/mieubrisse/cmdk/issues/4)
 - [Allow for favoriting files that pop to the top of the search](https://github.com/mieubrisse/cmdk/issues/5)
 - [Store the results of a selection in the history](https://github.com/mieubrisse/cmdk/issues/1)
