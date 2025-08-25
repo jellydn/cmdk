@@ -3,100 +3,142 @@
 set -euo pipefail
 script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
-fd_base_cmd="fd --follow --hidden --color=always"
 
 # Common project directories to exclude
-common_excludes="\
-    -E 'node_modules' \
-    -E '.git' \
-    -E 'dist' \
-    -E 'build' \
-    -E 'target' \
-    -E '.next' \
-    -E '.nuxt' \
-    -E 'coverage' \
-    -E '.pytest_cache' \
-    -E '__pycache__' \
-    -E '.venv' \
-    -E 'vendor' \
-    -E '.tox' \
-    -E '.mypy_cache' \
-    -E '.ruff_cache' \
-    -E '.turbo' \
-    -E 'out' \
-    -E '.parcel-cache' \
-    -E '.terraform'"
+common_exclude_dirs=(
+    'node_modules'
+    '.git'
+    'dist'
+    'build'
+    'target'
+    '.next'
+    '.nuxt'
+    'coverage'
+    '.pytest_cache'
+    '__pycache__'
+    '.venv'
+    'vendor'
+    '.tox'
+    '.mypy_cache'
+    '.ruff_cache'
+    '.turbo'
+    'out'
+    '.parcel-cache'
+    '.terraform'
+)
 
-# If the user passes in a '-o' argument, we only list the contents of the current directory
-if [ "${1:-}" = "-o" ]; then
-    eval "${fd_base_cmd} --max-depth 1 ${common_excludes} ."
-    exit
+# Home-specific directories to exclude
+home_exclude_dirs=(
+    'Applications'
+    'Library'
+    '.pyenv'
+    '.jenv'
+    '.nvm'
+    'go'
+    'venvs'
+    '.cursor'
+    '.docker'
+    '.vscode'
+    '.cache'
+    '.gradle'
+    '.zsh_sessions'
+)
+
+# Build exclude arguments for fd command
+build_excludes() {
+    local excludes=""
+    for dir in "${@}"; do
+        excludes="${excludes} -E ${dir}"
+    done
+    echo "${excludes}"
+}
+
+# Build common exclude arguments
+common_exclude_args="$(build_excludes "${common_exclude_dirs[@]}")"
+home_exclude_args="$(build_excludes "${home_exclude_dirs[@]}")"
+
+# The various modes that cmdk can operate in
+
+SYSTEM_MODE="system"    # Show all files on the filesystem
+PWD_MODE="pwd"          # Show only the files in the current directory
+SUBDIRS_MODE="subdirs"  # Show all files in the current directory, and recurse into subdirectories
+
+
+mode="${SYSTEM_MODE}"
+for arg in "${@}"; do
+    case "$arg" in
+        -o)
+            mode="${PWD_MODE}"
+            ;;
+        -s)
+            mode="${SUBDIRS_MODE}"
+            ;;
+    esac
+done
+
+fd_base_cmd="fd --follow --hidden --color=always"
+
+# --------------- Handle current directory ------------------
+pwd_restriction=""
+if [ "${mode}" = "${PWD_MODE}" ]; then
+    pwd_restriction="--max-depth 1"
 fi
 
-# !!! NOTE !!!! order is important!!
-# fzf gives higher weight to lines earlier in the input, so we put most relevant things first
-
+home_excludes=""
+add_back_home_excludes="false"
 if [ "${PWD}" = "${HOME}" ]; then
-    # Skip several directories in home that contain a bunch of garbage
-    eval "${fd_base_cmd} --strip-cwd-prefix \
-        -E 'Applications' \
-        -E 'Library' \
-        -E '.pyenv' \
-        -E '.jenv' \
-        -E '.nvm' \
-        -E 'go' \
-        -E 'venvs' \
-        -E '.cursor' \
-        -E '.docker' \
-        -E '.vscode' \
-        -E '.cache' \
-        -E '.gradle' \
-        -E '.zsh_sessions' \
-        ${common_excludes} \
-        ."
-else
-    eval "${fd_base_cmd} --strip-cwd-prefix ${common_excludes} ."
+    home_excludes="${home_exclude_args}"
+    add_back_home_excludes="true"
 fi
 
-echo 'HOME'   # HOME
-echo '..'     # Parent directory
+${fd_base_cmd} --strip-cwd-prefix ${pwd_restriction} ${common_exclude_args} .
 
-# If we're not in the home directory, include stuff in the home directory
-if [ "${PWD}" != "${HOME}" ]; then
-    # Skip the Applications and Library in the home directory; they contain a bunch of garbage
-    eval "${fd_base_cmd} \
-        -E 'Applications' \
-        -E 'Library' \
-        -E '.pyenv' \
-        -E '.jenv' \
-        -E '.nvm' \
-        -E 'go' \
-        -E 'venvs' \
-        -E '.cursor' \
-        -E '.docker' \
-        -E '.vscode' \
-        -E '.cache' \
-        -E '.gradle' \
-        -E '.zsh_sessions' \
-        ${common_excludes} \
-        . \
-        '${HOME}'"
+# Now add back the directories (but not contents) of any common excludes we removed
+# TODO there's a bug where they get excluded but not added back if they're in a subdirectory!
+for dir in "${common_exclude_dirs[@]}"; do
+    if [ -d "${PWD}/${dir}" ]; then
+        echo "${dir}"
+    fi
+done
+
+# And if we were in HOME, we also need to add back any of the home excludes that got removed
+# TODO there's a bug where they get excluded but not added back if they're in a subdirectory!
+for dir in "${home_exclude_dirs[@]}"; do
+    if [ -d "${PWD}/${dir}" ]; then
+        echo "${dir}"
+    fi
+done
+
+# --------------- Handle system beyond current directory -------------------
+if [ "${mode}" = "${SYSTEM_MODE}" ]; then
+    # If we're not at home, add it in (with excludes)
+    if [ "${PWD}" != "${HOME}" ]; then
+        ${fd_base_cmd} ${home_exclude_args} ${common_exclude_args} . "${HOME}"
+
+        # Add back common excluded directories in HOME
+        # TODO there's a bug where they get excluded but not added back if they're in a subdirectory!
+        for dir in "${common_exclude_dirs[@]}"; do
+            if [ -d "${HOME}/${dir}" ]; then
+                echo "${HOME}/${dir}"
+            fi
+        done
+
+        # Add back home-specific excluded directories in HOME
+        # TODO there's a bug where they get excluded but not added back if they're in a subdirectory!
+        for dir in "${home_exclude_dirs[@]}"; do
+            if [ -d "${HOME}/${dir}" ]; then
+                echo "${HOME}/${dir}"
+            fi
+        done
+    fi
+
+    echo '/tmp/'  # /tmp
+
+    echo '/'      # Root
+    ${fd_base_cmd} --exact-depth 1 . / # Show one level of root
 fi
 
-echo '/tmp/'  # /tmp
 
-echo '/'      # Root
-${fd_base_cmd} --exact-depth 1 . / # Show one level of root
-
-# Add back .pyenv and .jenv just in case the user wants to 'cd' to them
-echo "${HOME}/.pyenv"
-echo "${HOME}/.jenv"
-echo "${HOME}/.nvm"
-echo "${HOME}/go"
-echo "${HOME}/venvs"
-echo "${HOME}/.cursor"
-echo "${HOME}/.docker"
-echo "${HOME}/.vscode"
-echo "${HOME}/.cache"
-echo "${HOME}/.gradle"
-echo "${HOME}/.zsh_sessions"
+# --------------- Ominpresent items ------------------------
+echo "HOME"
+echo ".."
