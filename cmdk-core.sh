@@ -18,12 +18,14 @@ temp_output_file="$(mktemp)"
 # --ansi tells fzf to parse the ANSI color codes that we're generating with fd
 # --scheme=path optimizes for path-based input
 # --with-nth allows us to use the custom sorting mechanism
-FZF_DEFAULT_COMMAND="bash ${script_dirpath}/list-files.sh ${*}" fzf \
+set +u  # Temporarily disable unbound variable check for $*
+FZF_DEFAULT_COMMAND="bash ${script_dirpath}/list-files.sh $*" fzf \
     -m \
     --ansi \
     --bind='change:top' \
     --scheme=path \
     --preview="bash ${script_dirpath}/preview.sh {}" > "${temp_output_file}"
+set -u  # Re-enable unbound variable check
 
 if [ "${?}" -ne 0 ]; then
     rm -f "${temp_output_file}"
@@ -39,6 +41,7 @@ rm -f "${temp_output_file}"
 dirs=()
 text_files=()
 open_targets=()
+if [ "${#output_paths[@]}" -gt 0 ]; then
 for output in "${output_paths[@]}"; do
     case "${output}" in
         HOME)
@@ -71,11 +74,14 @@ for output in "${output_paths[@]}"; do
             ;;
     esac
 done
+fi
 
 # We can open open_targets here (no need to pass them to the parent)
-for open_target_filepath in "${open_targets[@]}"; do
-    open "${open_target_filepath}"
-done
+if [ "${#open_targets[@]}" -gt 0 ]; then
+    for open_target_filepath in "${open_targets[@]}"; do
+        open "${open_target_filepath}"
+    done
+fi
 
 # However, text files & dirs need to be passed to the parent, so they
 # get run in the user's shell process (and not this subprocess)

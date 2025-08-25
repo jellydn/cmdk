@@ -65,6 +65,7 @@ SUBDIRS_MODE="subdirs"  # Show all files in the current directory, and recurse i
 
 
 mode="${SYSTEM_MODE}"
+if [ $# -gt 0 ]; then
 for arg in "${@}"; do
     case "$arg" in
         -o)
@@ -75,6 +76,7 @@ for arg in "${@}"; do
             ;;
     esac
 done
+fi
 
 fd_base_cmd="fd --follow --hidden --color=always"
 
