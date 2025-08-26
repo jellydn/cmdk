@@ -40,7 +40,8 @@ set -u  # Re-enable unbound variable check
 # Cleanup toggle state
 bash "${script_dirpath}/toggle-state.sh" cleanup >/dev/null 2>&1 || true
 
-if [ "${?}" -ne 0 ]; then
+exit_code=$?
+if [ "$exit_code" -ne 0 ]; then
     rm -f "${temp_output_file}"
     return
 fi

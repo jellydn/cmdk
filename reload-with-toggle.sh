@@ -1,10 +1,10 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -euo pipefail
 script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
 # Get current toggle state
-toggle_state="$(sh "${script_dirpath}/toggle-state.sh" get)"
+toggle_state="$(bash "${script_dirpath}/toggle-state.sh" get)"
 
 # Build arguments for list-files.sh
 args=""
@@ -18,4 +18,5 @@ for arg in "$@"; do
 done
 
 # Execute list-files.sh with appropriate flags
+# shellcheck disable=SC2086
 bash "${script_dirpath}/list-files.sh" $args
