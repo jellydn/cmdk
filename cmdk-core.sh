@@ -33,7 +33,6 @@ FZF_DEFAULT_COMMAND="bash ${script_dirpath}/reload-with-toggle.sh $*" fzf \
     --bind='change:top' \
     --bind="ctrl-t:reload(bash ${script_dirpath}/toggle-state.sh toggle >/dev/null && bash ${script_dirpath}/reload-with-toggle.sh $*)+change-header(Toggled .env visibility)" \
     --scheme=path \
-    --header='Ctrl+T: toggle hidden files' \
     --preview="bash ${script_dirpath}/preview.sh {}" > "${temp_output_file}"
 set -u  # Re-enable unbound variable check
 
