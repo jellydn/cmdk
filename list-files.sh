@@ -149,8 +149,11 @@ fi
 
 
 # --------------- Omnipresent items ------------------------
-# Only show HOME and .. for system mode, not for subdirs mode
-if [ "${mode}" != "${SUBDIRS_MODE}" ]; then
+# Only show HOME for system mode, but show .. for all modes except system (for navigation)
+if [ "${mode}" = "${SYSTEM_MODE}" ]; then
     echo "HOME"
+    echo ".."
+else
+    # For -o and -s modes, only show .. for navigation back
     echo ".."
 fi
