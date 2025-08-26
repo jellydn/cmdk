@@ -74,6 +74,7 @@ Press ⌘-k (or type `cmdk`) and...
 - `ENTER` to select the result
 - `TAB` to select multiple items before `ENTER`
 - `Ctrl-u` to clear the selection
+- `Ctrl-t` to toggle visibility of gitignored files (like `.env`)
 
 > ⚠️ Some directories like `Library`, `/`, and `.git` are full of stuff users don't need to access, so their contents are excluded. To get to their contents, first ⌘-k to them and then ⌘-k again to see their contents.
 
@@ -83,6 +84,7 @@ Press ⌘-k (or type `cmdk`) and...
 
 - `-o` - Only list the contents of the current directory at depth 1 (original behavior)
 - `-s` - List all contents of the current directory recursively, including subdirectories
+- `-e` - Show hidden files that are typically excluded by `.gitignore` (including `.env` files)
 
 ### Editor Configuration
 

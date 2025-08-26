@@ -11,6 +11,13 @@ script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
 output_paths=()
 
+# Initialize toggle state based on -e flag
+if echo "$*" | grep -q '\-e'; then
+    bash "${script_dirpath}/toggle-state.sh" init on >/dev/null
+else
+    bash "${script_dirpath}/toggle-state.sh" init off >/dev/null
+fi
+
 # Use a temporary file instead of process substitution for better shell compatibility
 temp_output_file="$(mktemp)"
 # EXPLANATION:
@@ -18,14 +25,20 @@ temp_output_file="$(mktemp)"
 # --ansi tells fzf to parse the ANSI color codes that we're generating with fd
 # --scheme=path optimizes for path-based input
 # --with-nth allows us to use the custom sorting mechanism
+# --bind='ctrl-i:...' adds Ctrl+I to toggle .env visibility
 set +u  # Temporarily disable unbound variable check for $*
-FZF_DEFAULT_COMMAND="bash ${script_dirpath}/list-files.sh $*" fzf \
+FZF_DEFAULT_COMMAND="bash ${script_dirpath}/reload-with-toggle.sh $*" fzf \
     -m \
     --ansi \
     --bind='change:top' \
+    --bind="ctrl-t:reload(bash ${script_dirpath}/toggle-state.sh toggle >/dev/null && bash ${script_dirpath}/reload-with-toggle.sh $*)+change-header(Toggled .env visibility)" \
     --scheme=path \
+    --header='Ctrl+T: toggle hidden files' \
     --preview="bash ${script_dirpath}/preview.sh {}" > "${temp_output_file}"
 set -u  # Re-enable unbound variable check
+
+# Cleanup toggle state
+bash "${script_dirpath}/toggle-state.sh" cleanup >/dev/null 2>&1 || true
 
 if [ "${?}" -ne 0 ]; then
     rm -f "${temp_output_file}"

@@ -65,6 +65,7 @@ SUBDIRS_MODE="subdirs"  # Show all files in the current directory, and recurse i
 
 
 mode="${SYSTEM_MODE}"
+show_ignored="false"
 if [ $# -gt 0 ]; then
 for arg in "${@}"; do
     case "$arg" in
@@ -74,11 +75,17 @@ for arg in "${@}"; do
         -s)
             mode="${SUBDIRS_MODE}"
             ;;
+        -e)
+            show_ignored="true"
+            ;;
     esac
 done
 fi
 
 fd_base_cmd="fd --follow --hidden --color=always"
+if [ "$show_ignored" = "true" ]; then
+    fd_base_cmd="${fd_base_cmd} --no-ignore"
+fi
 
 # --------------- Handle current directory ------------------
 pwd_restriction=""
