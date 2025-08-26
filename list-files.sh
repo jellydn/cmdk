@@ -148,6 +148,9 @@ if [ "${mode}" = "${SYSTEM_MODE}" ]; then
 fi
 
 
-# --------------- Ominpresent items ------------------------
-echo "HOME"
-echo ".."
+# --------------- Omnipresent items ------------------------
+# Only show HOME and .. for system mode, not for subdirs mode
+if [ "${mode}" != "${SUBDIRS_MODE}" ]; then
+    echo "HOME"
+    echo ".."
+fi
