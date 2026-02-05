@@ -41,21 +41,21 @@ Installation
    source ~/.cmdk/cmdk.fish
    ```
 4. (Optional) Bind the `⌘-k` hotkey (or any other if you prefer) to send the text `cmdk\n` in your terminal:
-   <details>
-   <summary>💻 iTerm</summary>
-   
-   `Settings → Profiles → Keys → Keybindings → + → Send Text`, then binding `⌘-k` to send the text `cmdk\n`
-   
-   </details>
-   <details>
-   <summary>👻 Ghostty</summary>
-   
-   ```
-   # ~/.config/ghostty/config  (or $XDG_CONFIG_HOME/ghostty/config)
-   keybind = cmd+k=text:cmdk\r
-   ```
-   
-   </details>
+    <details>
+    <summary>💻 iTerm</summary>
+
+    `Settings → Profiles → Keys → Keybindings → + → Send Text`, then binding `⌘-k` to send the text `cmdk\n`
+
+    </details>
+    <details>
+    <summary>👻 Ghostty</summary>
+
+    ```
+    # ~/.config/ghostty/config  (or $XDG_CONFIG_HOME/ghostty/config)
+    keybind = cmd+k=text:cmdk\r
+    ```
+
+    </details>
 5. Open a new shell and press your hotkey (⌘-K if you bound it) or enter `cmdk` (if you don't have a hotkey)
 6. (Optional) If you'd like to use `cmdk`'s functionality with `fzf`'s <Ctrl-T>, add the following to your `.bashrc` or `.zshrc`:
    ```
@@ -75,6 +75,7 @@ Press ⌘-k (or type `cmdk`) and...
 - `TAB` to select multiple items before `ENTER`
 - `Ctrl-u` to clear the selection
 - `Ctrl-t` to toggle visibility of gitignored files (like `.env`)
+- `Ctrl-g` to toggle between all files and git-changed files only (modified, staged, untracked)
 
 > ⚠️ Some directories like `Library`, `/`, and `.git` are full of stuff users don't need to access, so their contents are excluded. To get to their contents, first ⌘-k to them and then ⌘-k again to see their contents.
 
