@@ -11,12 +11,13 @@ script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
 output_paths=()
 
-# Initialize toggle state based on -e flag
+# Initialize toggle states based on -e flag
 if echo "$*" | grep -q '\-e'; then
-    bash "${script_dirpath}/toggle-state.sh" init on >/dev/null
+    bash "${script_dirpath}/actions/toggle-state.sh" init on >/dev/null
 else
-    bash "${script_dirpath}/toggle-state.sh" init off >/dev/null
+    bash "${script_dirpath}/actions/toggle-state.sh" init off >/dev/null
 fi
+bash "${script_dirpath}/actions/git-toggle-state.sh" init off >/dev/null
 
 # Use a temporary file instead of process substitution for better shell compatibility
 temp_output_file="$(mktemp)"
@@ -27,17 +28,19 @@ temp_output_file="$(mktemp)"
 # --with-nth allows us to use the custom sorting mechanism
 # --bind='ctrl-i:...' adds Ctrl+I to toggle .env visibility
 set +u  # Temporarily disable unbound variable check for $*
-FZF_DEFAULT_COMMAND="bash ${script_dirpath}/reload-with-toggle.sh $*" fzf \
+FZF_DEFAULT_COMMAND="bash ${script_dirpath}/reload-files.sh $*" fzf \
     -m \
     --ansi \
     --bind='change:top' \
-    --bind="ctrl-t:reload(bash ${script_dirpath}/toggle-state.sh toggle >/dev/null && bash ${script_dirpath}/reload-with-toggle.sh $*)" \
+    --bind="ctrl-t:reload(bash ${script_dirpath}/actions/toggle-state.sh toggle >/dev/null && bash ${script_dirpath}/reload-files.sh $*)" \
+    --bind="ctrl-g:reload(bash ${script_dirpath}/actions/git-toggle-state.sh toggle >/dev/null && bash ${script_dirpath}/reload-files.sh $*)" \
     --scheme=path \
     --preview="bash ${script_dirpath}/preview.sh {}" > "${temp_output_file}"
 set -u  # Re-enable unbound variable check
 
-# Cleanup toggle state
-bash "${script_dirpath}/toggle-state.sh" cleanup >/dev/null 2>&1 || true
+# Cleanup toggle states
+bash "${script_dirpath}/actions/toggle-state.sh" cleanup >/dev/null 2>&1 || true
+bash "${script_dirpath}/actions/git-toggle-state.sh" cleanup >/dev/null 2>&1 || true
 
 exit_code=$?
 if [ "$exit_code" -ne 0 ]; then

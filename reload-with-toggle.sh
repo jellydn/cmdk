@@ -4,7 +4,7 @@ set -euo pipefail
 script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
 # Get current toggle state
-toggle_state="$(bash "${script_dirpath}/toggle-state.sh" get)"
+toggle_state="$(bash "${script_dirpath}/actions/toggle-state.sh" get)"
 
 # Build arguments for list-files.sh
 args=""
