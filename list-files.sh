@@ -1,7 +1,6 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -euo pipefail
-script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
 
 # Common project directories to exclude
@@ -94,13 +93,12 @@ if [ "${mode}" = "${PWD_MODE}" ]; then
 fi
 
 home_excludes=""
-add_back_home_excludes="false"
 if [ "${PWD}" = "${HOME}" ]; then
     home_excludes="${home_exclude_args}"
-    add_back_home_excludes="true"
 fi
 
-${fd_base_cmd} --strip-cwd-prefix ${pwd_restriction} ${common_exclude_args} .
+# shellcheck disable=SC2086
+${fd_base_cmd} --strip-cwd-prefix ${pwd_restriction} ${common_exclude_args} ${home_excludes} .
 
 # Now add back the directories (but not contents) of any common excludes we removed
 # TODO there's a bug where they get excluded but not added back if they're in a subdirectory!
@@ -122,6 +120,7 @@ done
 if [ "${mode}" = "${SYSTEM_MODE}" ]; then
     # If we're not at home, add it in (with excludes)
     if [ "${PWD}" != "${HOME}" ]; then
+        # shellcheck disable=SC2086
         ${fd_base_cmd} ${home_exclude_args} ${common_exclude_args} . "${HOME}"
 
         # Add back common excluded directories in HOME
