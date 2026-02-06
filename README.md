@@ -125,6 +125,23 @@ Feedback
 --------
 Hi HN! I'd love to hear how you're using cmdk, and making it your own.
 
+Testing
+-------
+cmdk uses [BATS](https://github.com/bats-core/bats-core) (Bash Automated Testing System) for automated tests.
+
+```sh
+brew install bats-core  # if not already installed
+bats test/
+```
+
+Test files:
+- `test/list-files.bats` — file discovery, depth modes, spaces/special chars, exclude dirs
+- `test/git-files.bats` — git-changed file detection, deduplication, non-git fallback
+- `test/toggle-state.bats` — toggle init, flip, get, cleanup
+- `test/preview.bats` — text/directory/HOME preview
+
+For manual testing across shells (bash, zsh, fish), see [testing-checklist.md](testing-checklist.md).
+
 TODO
 ----
 - [Allow for favoriting files that pop to the top of the search](https://github.com/mieubrisse/cmdk/issues/5)
