@@ -15,10 +15,11 @@ script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 git_filter_state=$(bash "${script_dirpath}/actions/git-toggle-state.sh" get)
 
 if [ "$git_filter_state" = "on" ]; then
-    # Show only git files (if in a git repo)
-    git rev-parse --git-dir >/dev/null 2>&1 && \
-        bash "${script_dirpath}/git-files.sh" 2>/dev/null || \
+    if git rev-parse --git-dir >/dev/null 2>&1; then
+        bash "${script_dirpath}/git-files.sh" 2>/dev/null
+    else
         bash "${script_dirpath}/reload-with-toggle.sh" "$@"
+    fi
 else
     # Show normal file list (respects .env toggle via reload-with-toggle.sh)
     bash "${script_dirpath}/reload-with-toggle.sh" "$@"
